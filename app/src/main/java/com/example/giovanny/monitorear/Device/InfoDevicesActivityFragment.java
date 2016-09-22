@@ -1,51 +1,54 @@
 package com.example.giovanny.monitorear.Device;
 
-import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.example.giovanny.monitorear.Censado;
 import com.example.giovanny.monitorear.ConexionServer;
-import com.example.giovanny.monitorear.GraficaryMQTT.GraficarActivity;
+import com.example.giovanny.monitorear.GraficaryMQTT.GraficarActivityFragment;
 import com.example.giovanny.monitorear.R;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class InfoDevicesActivity extends AppCompatActivity {
+public class InfoDevicesActivityFragment extends Fragment {
+
+    private static final String TAG = "RecyclerViewFragment";
     private static String LOG_TAG = "CardViewActivity2";
     private RecyclerView mRecyclerView;
     private DispositivoAdapter mDisAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    ArrayList <Dispositivo>results;
+
+    ArrayList<Dispositivo> results;
     ArrayList<Censado> resultsCensado;
     int posicion;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_info_devices);
-        Intent intent = getIntent();
-        results= intent.getParcelableArrayListExtra("dispositivos");
-        Log.i("response", results.toString());
-        for (int i=0;i<results.size();i++)
-            Log.d(LOG_TAG,"_"+results.get(i).toString()+"_");
-        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.content_fragment, container, false);
+        rootView.setTag(TAG);
+        results = getArguments().getParcelableArrayList("dispositivos");
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view_final);
         mRecyclerView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mDisAdapter = new DispositivoAdapter(results);
         mRecyclerView.setAdapter(mDisAdapter);
 
+
+        return rootView;
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         (mDisAdapter).setOnItemClickListener(new DispositivoAdapter
                 .MyClickListener() {
@@ -58,7 +61,6 @@ public class InfoDevicesActivity extends AppCompatActivity {
             }
         });
     }
-
 
     private class cargarCensado extends AsyncTask<String, Void, String> {
         String url;
@@ -86,12 +88,19 @@ public class InfoDevicesActivity extends AppCompatActivity {
     }
 
     public void graficar(){
-        Intent intent = new Intent(this,GraficarActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("dispositivos", results);
         String tipo = results.get(posicion).getTipo_sensor();
-        intent.putExtra("tiposensor",tipo.substring(0, 1).toUpperCase() + tipo.substring(1));
-        intent.putExtra("idsensor",results.get(posicion).getId());
-        intent.putExtra("unidad",results.get(posicion).getUnidad());
-        intent.putParcelableArrayListExtra("censados",resultsCensado);
-        startActivity(intent);
+        bundle.putSerializable("tiposensor",tipo.substring(0, 1).toUpperCase() + tipo.substring(1));
+        bundle.putSerializable("idsensor",results.get(posicion).getId());
+        bundle.putSerializable("unidad",results.get(posicion).getUnidad());
+        bundle.putParcelableArrayList("censados",resultsCensado);
+        GraficarActivityFragment fragment = new GraficarActivityFragment();
+        fragment.setArguments(bundle);
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.replace(R.id.frame, fragment);
+        fragmentTransaction.commit();
     }
+
 }

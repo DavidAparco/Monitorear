@@ -1,12 +1,16 @@
 package com.example.giovanny.monitorear.GraficaryMQTT;
 
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
+
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.example.giovanny.monitorear.Censado;
 import com.example.giovanny.monitorear.R;
 import com.github.mikephil.charting.charts.LineChart;
@@ -20,10 +24,9 @@ import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-public class GraficarActivity extends AppCompatActivity {
+public class GraficarActivityFragment extends Fragment {
 
     ArrayList<Censado> results;
     LineChart lineChart ;
@@ -33,21 +36,24 @@ public class GraficarActivity extends AppCompatActivity {
     private ArrayList<Entry> entries;
     ArrayList<String> labels;
     String topicos [] = new String[]{"temperatura","presion","monoxido","dioxido","amoniaco","altura"};
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_graficar);
-        tipo=(TextView)findViewById(R.id.edTipoSensor);
-        id=(TextView)findViewById(R.id.edIdSensor);
-        Intent intent = getIntent();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.activity_graficar, container, false);
 
-        tipo.setText(intent.getStringExtra("tiposensor"));
-        id.setText("id:"+intent.getStringExtra("idsensor"));
+        tipo = (TextView) rootView.findViewById(R.id.edTipoSensor);
+        id = (TextView) rootView.findViewById(R.id.edIdSensor);
 
-        results = intent.getParcelableArrayListExtra("censados");
-        lineChart = (LineChart) findViewById(R.id.chart);
-        graficar(intent.getStringExtra("unidad"));
-        creoClienteMQTT(intent.getStringExtra("tiposensor"));
+        tipo.setText(getArguments().getString("tiposensor"));
+        id.setText(getArguments().getString("idsensor"));
+
+        results = getArguments().getParcelableArrayList("censados");
+        lineChart = (LineChart) rootView.findViewById(R.id.chart);
+        graficar(getArguments().getString("unidad"));
+        creoClienteMQTT(getArguments().getString("tiposensor"));
+
+        return rootView;
     }
 
     private void graficar(String unidad){
@@ -78,7 +84,7 @@ public class GraficarActivity extends AppCompatActivity {
 
     private void creoClienteMQTT(final String sub){
         final MqttAndroidClient mqttAndroidClient
-                = new MqttAndroidClient(this.getApplicationContext(), "tcp://52.10.199.174:1883", "GioID");
+                = new MqttAndroidClient(getActivity().getApplicationContext(), "tcp://52.10.199.174:1883", "GioID");
         mqttAndroidClient.setCallback(new MiCallBackMQTT() {
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {

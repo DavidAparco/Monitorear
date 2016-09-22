@@ -84,7 +84,5 @@ public class DispositivoAdapter extends RecyclerView.Adapter<DispositivoAdapter.
 
     public interface MyClickListener {
         void onItemClick(int position, View v);
-
-
-     }
+    }
 }

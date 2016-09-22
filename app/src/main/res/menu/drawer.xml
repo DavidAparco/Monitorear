@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/parametrizacion"
+            android:checked="false"
+            android:icon="@drawable/ic_settings_input_antenna_black_24dp"
+            android:title="@string/param_string" />
+        <item
+            android:id="@+id/mapa_marker"
+            android:checked="false"
+            android:icon="@drawable/ic_place_black_24dp"
+            android:title="@string/marker_string" />
+        <item
+            android:id="@+id/mapa_calor"
+            android:checked="false"
+            android:icon="@drawable/ic_satellite_black_24dp"
+            android:title="@string/calor_string" />
+        <item
+            android:id="@+id/ocio"
+            android:checked="false"
+            android:icon="@drawable/ic_directions_bike_black_24dp"
+            android:title="@string/ocio_string" />
+    </group>
+
+</menu>

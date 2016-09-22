@@ -25,7 +25,7 @@ public class ConexionServer {
     public ArrayList<Censado> receiveJson(String func)throws IOException {
 
         InputStream is = null;
-        int len = 1000;
+        int len = 1500;
         ArrayList<Censado> censados=new ArrayList<>();
         try {
             HttpURLConnection conn = AbroConexion(urlp+func);
@@ -63,7 +63,7 @@ public class ConexionServer {
     public ArrayList<Dispositivo> receiveJsonDispositivo(String func)throws IOException {
 
         InputStream is = null;
-        int len = 1000;
+        int len = 1500;
         ArrayList<Dispositivo> dispositivos=new ArrayList<>();
 
         try {
@@ -72,7 +72,7 @@ public class ConexionServer {
             is = conn.getInputStream();
             // Convert the InputStream into a string
             String contentAsString = readIt(is, len);
-            Log.d("respuesta", contentAsString);
+
             JSONObject jsonObject = new JSONObject(contentAsString);
             JSONArray jsonArray = jsonObject.getJSONArray("array_json");
 

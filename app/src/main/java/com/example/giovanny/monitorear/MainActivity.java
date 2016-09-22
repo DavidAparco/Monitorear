@@ -1,33 +1,114 @@
 package com.example.giovanny.monitorear;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.example.giovanny.monitorear.Device.Dispositivo;
-import com.example.giovanny.monitorear.Device.InfoDevicesActivity;
+import com.example.giovanny.monitorear.Device.InfoDevicesActivityFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+
     ArrayList<Dispositivo> results;
     private final int code_request=1234;
+    private Toolbar toolbar;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                if(menuItem.isChecked()) menuItem.setChecked(false);
+                else menuItem.setChecked(true);
+
+                drawerLayout.closeDrawers();
+
+                switch(menuItem.getItemId()) {
+                    case R.id.parametrizacion:
+                        new cargarDispositivos("consInf/").execute();
+                        return true;
+                    case R.id.mapa_marker:
+                        Toast.makeText(getApplicationContext(), "Mapa de Marcadores Seleccionado", Toast.LENGTH_SHORT).show();
+                        return true;
+                    case R.id.mapa_calor:
+                        Toast.makeText(getApplicationContext(), "Mapa de Calor", Toast.LENGTH_SHORT).show();
+                        return true;
+                    case R.id.ocio:
+                        Toast.makeText(getApplicationContext(), "Ocio", Toast.LENGTH_SHORT).show();
+                        return true;
+                    default:
+                        Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT).show();
+                        return true;
+                }
+            }
+        });
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawer, R.string.closeDrawer) {
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+            }
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
+        };
+
+        drawerLayout.setDrawerListener(actionBarDrawerToggle);
+
+        actionBarDrawerToggle.syncState();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, code_request);
         }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
@@ -76,8 +157,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void graficar(){
-        Intent intent = new Intent(this,InfoDevicesActivity.class);
-        intent.putParcelableArrayListExtra("dispositivos",results);
-        startActivity(intent);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("dispositivos", results);
+        InfoDevicesActivityFragment fragment = new InfoDevicesActivityFragment();
+        fragment.setArguments(bundle);
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.replace(R.id.frame, fragment);
+        fragmentTransaction.commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        int count = getFragmentManager().getBackStackEntryCount();
+
+        if (count == 0) {
+            super.onBackPressed();
+        } else {
+            getFragmentManager().popBackStack();
+        }
     }
 }
